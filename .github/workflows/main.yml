@@ -52,7 +52,9 @@ jobs:
                       try {
                           Grant-GraphPermissions -SvcPrincipalId $identity.PrincipalId -PermissionsList @('Application.ReadWrite.All','AppRoleAssignment.ReadWrite.All','DelegatedPermissionGrant.ReadWrite.All','User.Read.All') -PermissionsType application -verbose
                           $loaded = $true
-                      } catch {}
+                      } catch {
+                        Write-Warning $_.Exception.Message
+                      }
                   }
               }
 
