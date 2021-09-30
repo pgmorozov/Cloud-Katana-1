@@ -57,12 +57,23 @@ jobs:
                       }
                   }
               }
-
+              
+              $resourceNames = @{
+                AppName = "$env:RESOURCE_NAME_PREFIXCK$env:RESOURCE_NAME_SUFFIX";
+                Identity = "$env:RESOURCE_NAME_PREFIXCK$env:RESOURCE_NAME_SUFFIX";
+                ServerAppName = "$env:RESOURCE_NAME_PREFIXKatanaServer$env:RESOURCE_NAME_SUFFIX";
+                ClientAppName = "$env:RESOURCE_NAME_PREFIXKatanaClient$env:RESOURCE_NAME_SUFFIX";
+              }
+              $AppName = $resourceNames.AppName.ToLower()
+              if($AppName.Length -lt 20)
+              {
+                  $resourceNames.AppName = $AppName + [String]::new('0', 20-$AppName.Length)
+              }
+              
               New-AzResourceGroupDeployment -ResourceGroupName $RGName `
                                             -TemplateFile "$env:GITHUB_WORKSPACE/azuredeploy.json" `
                                             -artifactsLocation "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/${{ steps.extract_branch.outputs.branch }}" `
-                                            -resourceNamePrefix $env:RESOURCE_NAME_PREFIX `
-                                            -resourceNameSuffix $env:RESOURCE_NAME_SUFFIX `
+                                            -_resourceNames $resourceNames `
                                             -assignAppRoleToUser $env:AZURE_USER `
                                             -identityId $identity.Id `
                                             -Verbose
