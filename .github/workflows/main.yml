@@ -46,7 +46,7 @@ jobs:
               {
                   $identity = New-AzUserAssignedIdentity -ResourceGroupName $RGName -Name $deploymentIdentityName
 
-                  . $env:GITHUB_WORKSPACE/Grant-GraphPermissions.ps1
+                  . $env:GITHUB_WORKSPACE/resources/scripts/Grant-GraphPermissions.ps1
 
                   while(!$loaded){
                       try {
