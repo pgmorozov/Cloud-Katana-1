@@ -72,6 +72,7 @@ jobs:
               
               New-AzResourceGroupDeployment -ResourceGroupName $RGName `
                                             -TemplateFile "$env:GITHUB_WORKSPACE/azuredeploy.json" `
+                                            -functionAppName 'NONAME' `
                                             -artifactsLocation "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/${{ steps.extract_branch.outputs.branch }}" `
                                             -_resourceNames $resourceNames `
                                             -assignAppRoleToUser $env:AZURE_USER `
