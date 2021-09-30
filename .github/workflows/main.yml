@@ -37,17 +37,18 @@ jobs:
         uses: Azure/powershell@v1
         with:
           inlineScript:  |
+              $RGName = "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX"
               Install-Module Az.ManagedServiceIdentity -Force -Confirm:$false
               
               $deploymentIdentityName = "$env:RESOURCE_NAME_PREFIX-DI-$env:RESOURCE_NAME_SUFFIX"
-              $identity = Get-AzUserAssignedIdentity -ResourceGroupName "$env:RESOURCE_NAME_PREFIX-DI-$env:RESOURCE_NAME_SUFFIX" |? Name -EQ $deploymentIdentityName
+              $identity = Get-AzUserAssignedIdentity -ResourceGroupName $RGName |? Name -EQ $deploymentIdentityName
               if(!$identity)
               {
-                  $identity = New-AzUserAssignedIdentity -ResourceGroupName "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX" -Name $deploymentIdentityName
+                  $identity = New-AzUserAssignedIdentity -ResourceGroupName $RGName -Name $deploymentIdentityName
 
                   Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/${{ steps.extract_branch.outputs.branch }}/resources/scripts/Grant-GraphPermissions.ps1' -OutFile Grant-GraphPermissions.ps1
 
-                  . .\Grant-GraphPermissions.ps1
+                  . $env:GITHUB_WORKSPACE/Grant-GraphPermissions.ps1
 
                   while(!$loaded){
                       try {
@@ -57,7 +58,7 @@ jobs:
                   }
               }
 
-              New-AzResourceGroupDeployment -ResourceGroupName "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX" `
+              New-AzResourceGroupDeployment -ResourceGroupName $RGName `
                                             -TemplateFile "$env:GITHUB_WORKSPACE/main.template.json" `
                                             -artifactsLocation "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/${{ steps.extract_branch.outputs.branch }}" `
                                             -resourceNamePrefix $env:RESOURCE_NAME_PREFIX `
