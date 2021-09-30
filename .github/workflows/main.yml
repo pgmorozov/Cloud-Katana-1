@@ -38,10 +38,6 @@ jobs:
         with:
           inlineScript:  |
               Install-Module Az.ManagedServiceIdentity -Force -Confirm:$false
-              Install-Module AzureAD -Force -Confirm:$false
-              $token = Get-AzAccessToken -ResourceUrl 'https://graph.windows.net/'
-              $ctx = Get-AzContext
-              Connect-AzureAD -AadAccessToken $token.Token -AccountId $ctx.Account.Id -TenantId $ctx.Tenant.Id
               
               $deploymentIdentityName = "$env:RESOURCE_NAME_PREFIX-DI-$env:RESOURCE_NAME_SUFFIX"
               $identity = Get-AzUserAssignedIdentity -ResourceGroupName '$(RGName)'|? Name -EQ $deploymentIdentityName
