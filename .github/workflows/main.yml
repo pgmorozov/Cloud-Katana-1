@@ -101,10 +101,7 @@ jobs:
                   Invoke-RestMethod @params
               }
 
-              $resourceNames.AppName
-              [System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName)
-              [System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))
-              [Guid]::new([System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))).Guid
+              $roleGuid = [Guid]::new([System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))).Guid
               
               New-AzResourceGroupDeployment -ResourceGroupName $RGName `
                                             -TemplateFile "$env:GITHUB_WORKSPACE/azuredeploy.json" `
@@ -113,6 +110,6 @@ jobs:
                                             -_resourceNames $resourceNames `
                                             -assignAppRoleToUser $env:AZURE_USER `
                                             -identityId $identity.Id `
-                                            -roleGuid [Guid]::new([System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))).Guid `
+                                            -roleGuid $roleGuid `
                                             -Verbose
           azPSVersion: "latest"
