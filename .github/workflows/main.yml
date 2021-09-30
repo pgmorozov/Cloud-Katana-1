@@ -79,14 +79,14 @@ jobs:
               }
               $params = @{
                   "Method"  = "Get"
-                  "Uri"     = "https://graph.microsoft.com/v1.0/users/$AssignAppRoleToUser"
+                  "Uri"     = "https://graph.microsoft.com/v1.0/users/$env:AZURE_USER"
                   "Headers" = $Headers
               }
               $principalId = (Invoke-RestMethod @params).Id
 
               $params = @{
                   "Method"  = "Get"
-                  "Uri"     = "https://graph.microsoft.com/v1.0/users/$AssignAppRoleToUser/appRoleAssignments"
+                  "Uri"     = "https://graph.microsoft.com/v1.0/users/$env:AZURE_USER/appRoleAssignments"
                   "Headers" = $Headers
               }
               $existingRoles = ((Invoke-RestMethod @params).value | ? resourceDisplayName -In ($resourceNames.ServerAppName, $resourceNames.ClientAppName)).id
@@ -95,7 +95,7 @@ jobs:
               {
                   $params = @{
                       "Method"  = "Delete"
-                      "Uri"     = "https://graph.microsoft.com/v1.0/users/$AssignAppRoleToUser/appRoleAssignments/$role"
+                      "Uri"     = "https://graph.microsoft.com/v1.0/users/$env:AZURE_USER/appRoleAssignments/$role"
                       "Headers" = $Headers
                   }
                   Invoke-RestMethod @params
