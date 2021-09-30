@@ -70,6 +70,38 @@ jobs:
                   $resourceNames.AppName = $AppName + [String]::new('0', 20-$AppName.Length)
               }
               
+
+              $accessToken = (Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com/").Token
+
+              $Headers = @{
+                  Authorization = "Bearer $accessToken"
+                  "Content-Type" = "application/json"
+              }
+              $params = @{
+                  "Method"  = "Get"
+                  "Uri"     = "https://graph.microsoft.com/v1.0/users/$AssignAppRoleToUser"
+                  "Headers" = $Headers
+              }
+              $principalId = (Invoke-RestMethod @params).Id
+
+              $params = @{
+                  "Method"  = "Get"
+                  "Uri"     = "https://graph.microsoft.com/v1.0/users/$AssignAppRoleToUser/appRoleAssignments"
+                  "Headers" = $Headers
+              }
+              $existingRoles = ((Invoke-RestMethod @params).value | ? resourceDisplayName -In ($resourceNames.ServerAppName, $resourceNames.ClientAppName)).id
+
+              foreach($role in $existingRoles)
+              {
+                  $params = @{
+                      "Method"  = "Delete"
+                      "Uri"     = "https://graph.microsoft.com/v1.0/users/$AssignAppRoleToUser/appRoleAssignments/$role"
+                      "Headers" = $Headers
+                  }
+                  Invoke-RestMethod @params
+              }
+
+              
               New-AzResourceGroupDeployment -ResourceGroupName $RGName `
                                             -TemplateFile "$env:GITHUB_WORKSPACE/azuredeploy.json" `
                                             -functionAppName 'NONAME' `
