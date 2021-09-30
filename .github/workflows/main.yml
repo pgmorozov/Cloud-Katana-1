@@ -59,10 +59,10 @@ jobs:
               }
               
               $resourceNames = @{
-                AppName = "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX";
-                Identity = "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX";
-                ServerAppName = "$env:RESOURCE_NAME_PREFIX-KatanaServer-$env:RESOURCE_NAME_SUFFIX";
-                ClientAppName = "$env:RESOURCE_NAME_PREFIX-KatanaClient-$env:RESOURCE_NAME_SUFFIX";
+                AppName = "$($env:RESOURCE_NAME_PREFIX)CK$($env:RESOURCE_NAME_SUFFIX)";
+                Identity = "$($env:RESOURCE_NAME_PREFIX)CK$($env:RESOURCE_NAME_SUFFIX)";
+                ServerAppName = "$($env:RESOURCE_NAME_PREFIX)KatanaServer$($env:RESOURCE_NAME_SUFFIX)";
+                ClientAppName = "$($env:RESOURCE_NAME_PREFIX)KatanaClient$($env:RESOURCE_NAME_SUFFIX)";
               }
               $AppName = $resourceNames.AppName.ToLower()
               if($AppName.Length -lt 20)
