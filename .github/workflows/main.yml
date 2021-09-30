@@ -46,8 +46,6 @@ jobs:
               {
                   $identity = New-AzUserAssignedIdentity -ResourceGroupName $RGName -Name $deploymentIdentityName
 
-                  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/${{ steps.extract_branch.outputs.branch }}/resources/scripts/Grant-GraphPermissions.ps1' -OutFile Grant-GraphPermissions.ps1
-
                   . $env:GITHUB_WORKSPACE/Grant-GraphPermissions.ps1
 
                   while(!$loaded){
