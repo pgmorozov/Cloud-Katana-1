@@ -40,7 +40,7 @@ jobs:
               Install-Module Az.ManagedServiceIdentity -Force -Confirm:$false
               
               $deploymentIdentityName = "$env:RESOURCE_NAME_PREFIX-DI-$env:RESOURCE_NAME_SUFFIX"
-              $identity = Get-AzUserAssignedIdentity -ResourceGroupName '$(RGName)'|? Name -EQ $deploymentIdentityName
+              $identity = Get-AzUserAssignedIdentity -ResourceGroupName "$env:RESOURCE_NAME_PREFIX-DI-$env:RESOURCE_NAME_SUFFIX" |? Name -EQ $deploymentIdentityName
               if(!$identity)
               {
                   $identity = New-AzUserAssignedIdentity -ResourceGroupName "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX" -Name $deploymentIdentityName
