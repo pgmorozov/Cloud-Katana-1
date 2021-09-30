@@ -11,13 +11,13 @@ jobs:
     env:
       RESOURCE_NAME_PREFIX: 'SOC'
       RESOURCE_NAME_SUFFIX: 'Dev'
+      AZURE_USER: '${{ secrets.AZURE_USER }}'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Azure Login
         uses: Azure/login@v1
         with:
-          AZURE_USER: '${{ secrets.AZURE_USER }}'
           creds: ${{ secrets.DEPLOYMENT_SPN }}
           enable-AzPSSession: true
       - name: Deploy resource group
