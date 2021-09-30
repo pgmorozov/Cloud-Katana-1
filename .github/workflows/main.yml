@@ -109,6 +109,6 @@ jobs:
                                             -_resourceNames $resourceNames `
                                             -assignAppRoleToUser $env:AZURE_USER `
                                             -identityId $identity.Id `
-                                            -roleGuid [Guid]::new([System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))) `
+                                            -roleGuid [Guid]::new([System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))).Guid `
                                             -Verbose
           azPSVersion: "latest"
