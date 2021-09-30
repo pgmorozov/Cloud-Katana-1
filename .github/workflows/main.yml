@@ -1,0 +1,72 @@
+name: DeployCloudKatana
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    environment: Dev
+    env:
+      RESOURCE_NAME_PREFIX: 'SOC'
+      RESOURCE_NAME_SUFFIX: 'Dev'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          AZURE_USER: '${{ secrets.AZURE_USER }}'
+          creds: ${{ secrets.DEPLOYMENT_SPN }}
+          enable-AzPSSession: true
+      - name: Deploy resource group
+        uses: Azure/powershell@v1
+        with:
+          inlineScript:  |
+            if(!(Get-AzResourceGroup|where ResourceGroupName -eq "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX"))
+            {
+              New-AzResourceGroup -Name "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX" -Location eastus
+            }
+          azPSVersion: "latest"
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      - name: Run deployment
+        uses: Azure/powershell@v1
+        with:
+          inlineScript:  |
+              Install-Module Az.ManagedServiceIdentity -Force -Confirm:$false
+              Install-Module AzureAD -Force -Confirm:$false
+              $token = Get-AzAccessToken -ResourceUrl 'https://graph.windows.net/'
+              $ctx = Get-AzContext
+              Connect-AzureAD -AadAccessToken $token.Token -AccountId $ctx.Account.Id -TenantId $ctx.Tenant.Id
+              
+              $deploymentIdentityName = "$env:RESOURCE_NAME_PREFIX-DI-$env:RESOURCE_NAME_SUFFIX"
+              $identity = Get-AzUserAssignedIdentity -ResourceGroupName '$(RGName)'|? Name -EQ $deploymentIdentityName
+              if(!$identity)
+              {
+                  $identity = New-AzUserAssignedIdentity -ResourceGroupName "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX" -Name $deploymentIdentityName
+
+                  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/${{ steps.extract_branch.outputs.branch }}/resources/scripts/Grant-GraphPermissions.ps1' -OutFile Grant-GraphPermissions.ps1
+
+                  . .\Grant-GraphPermissions.ps1
+
+                  while(!$loaded){
+                      try {
+                          Grant-GraphPermissions -SvcPrincipalId $identity.PrincipalId -PermissionsList @('Application.ReadWrite.All','AppRoleAssignment.ReadWrite.All','DelegatedPermissionGrant.ReadWrite.All','User.Read.All') -PermissionsType application -verbose
+                          $loaded = $true
+                      } catch {}
+                  }
+              }
+
+              New-AzResourceGroupDeployment -ResourceGroupName "$env:RESOURCE_NAME_PREFIX-CK-$env:RESOURCE_NAME_SUFFIX" `
+                                            -TemplateFile "$env:GITHUB_WORKSPACE/main.template.json" `
+                                            -artifactsLocation "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/${{ steps.extract_branch.outputs.branch }}" `
+                                            -resourceNamePrefix $env:RESOURCE_NAME_PREFIX `
+                                            -resourceNameSuffix $env:RESOURCE_NAME_SUFFIX `
+                                            -assignAppRoleToUser $env:AZURE_USER `
+                                            -identityId $identity.Id `
+                                            -Verbose
+          azPSVersion: "latest"
