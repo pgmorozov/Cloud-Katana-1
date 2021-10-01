@@ -100,6 +100,34 @@ jobs:
                   }
                   Invoke-RestMethod @params
               }
+              
+              $identity = Get-AzUserAssignedIdentity -ResourceGroupName $RGName |? Name -EQ $resourceNames.Identity
+              if($identity)
+              {
+                $principalId = $identity.PrincipalId
+                $accessToken = (Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com/").Token
+
+                $Headers = @{
+                    Authorization = "Bearer $accessToken"
+                    "Content-Type" = "application/json"
+                }
+                $params = @{
+                    "Method"  = "Get"
+                    "Uri"     = "https://graph.microsoft.com/v1.0/servicePrincipals/$principalId/appRoleAssignments"
+                    "Headers" = $Headers
+                }
+                $existingRoles = (Invoke-RestMethod @params).value.id
+
+                foreach($role in $existingRoles)
+                {
+                    $params = @{
+                        "Method"  = "Delete"
+                        "Uri"     = "https://graph.microsoft.com/v1.0/servicePrincipals/$principalId/appRoleAssignments/$role"
+                        "Headers" = $Headers
+                    }
+                    Invoke-RestMethod @params
+                }
+              }
 
               $roleGuid = [Guid]::new([System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))).Guid
               
