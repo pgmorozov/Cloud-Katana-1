@@ -101,10 +101,10 @@ jobs:
                   Invoke-RestMethod @params
               }
               
-              $identity = Get-AzUserAssignedIdentity -ResourceGroupName $RGName |? Name -EQ $resourceNames.Identity
-              if($identity)
+              $scriptIdentity = Get-AzUserAssignedIdentity -ResourceGroupName $RGName |? Name -EQ $resourceNames.Identity
+              if($scriptIdentity)
               {
-                $principalId = $identity.PrincipalId
+                $principalId = $scriptIdentity.PrincipalId
                 $accessToken = (Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com/").Token
 
                 $Headers = @{
