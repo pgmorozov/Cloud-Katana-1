@@ -139,7 +139,7 @@ jobs:
                 {
                     $params = @{
                       "Method"  = "Delete"
-                      "Uri"     = 'https://graph.microsoft.com/v1.0/oauth2PermissionGrants/$role'
+                      "Uri"     = "https://graph.microsoft.com/v1.0/oauth2PermissionGrants/$role"
                       "Headers" = $Headers
                     }
                     Invoke-RestMethod @params
