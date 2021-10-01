@@ -126,8 +126,26 @@ jobs:
                         "Headers" = $Headers
                     }
                     Invoke-RestMethod @params
+                }       
+                
+                $params = @{
+                    "Method"  = "Get"
+                    "Uri"     = 'https://graph.microsoft.com/v1.0/oauth2PermissionGrants'
+                    "Headers" = $Headers
+                }
+                $existingAssignments = ((Invoke-RestMethod @params).value | ? clientId -EQ $principalId).id
+
+                foreach($role in $existingAssignments)
+                {
+                    $params = @{
+                      "Method"  = "Delete"
+                      "Uri"     = 'https://graph.microsoft.com/v1.0/oauth2PermissionGrants/$role'
+                      "Headers" = $Headers
+                    }
+                    Invoke-RestMethod @params
                 }
               }
+              
 
               $roleGuid = [Guid]::new([System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($resourceNames.AppName))).Guid
               
